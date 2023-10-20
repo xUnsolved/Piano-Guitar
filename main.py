@@ -1,14 +1,13 @@
 import os
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QMenu
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QMenu, QLabel
 from PyQt5.QtCore import Qt, QRect, QPropertyAnimation
 
 error_files = set()
 
-#Анімація клавіш
+# Анімація клавіш
 class KeyPressEater:
-
-    #Натискання
+    # Натискання
     def start_animation(btn):
         if btn.is_black:
             btn.setStyleSheet("background-color: gray; color: black;")
@@ -17,9 +16,9 @@ class KeyPressEater:
             btn.animation.setDuration(100)
             btn.animation.setStartValue(btn.geometry())
             btn.animation.setEndValue(QRect(btn.x(), btn.y(), btn.width(), btn.height() + 10))
-            btn.animation.start()   
+            btn.animation.start()
 
-    #Відтіскання
+    # Відтискання
     def end_animation(btn):
         if btn.is_black:
             btn.setStyleSheet("background-color: black; color: white;")
@@ -28,7 +27,7 @@ class KeyPressEater:
             btn.animation.deleteLater()
             del btn.animation
 
-#Класс кнопок, кольор та інші ініціалізація запуску звуків
+# Клас кнопок, кольор та інші ініціалізація запуску звуків
 class AnimatedButton(QPushButton):
     def __init__(self, key, file_path, is_black=False):
         super(AnimatedButton, self).__init__(key)
@@ -43,15 +42,14 @@ class AnimatedButton(QPushButton):
         self.pressed.connect(lambda: KeyPressEater.start_animation(self))
         self.released.connect(lambda: KeyPressEater.end_animation(self))
 
-#Класс для запуску звуків
+# Клас для запуску звуків
 def play_sound(file_path):
     QSound.play(file_path)
 
-
-#Пресет назви звуків
+# Пресет назви звуків
 def set_instrument(instrument):
     instrument_keys = {
-        'piano': {
+        'Піаніно': {
             'C': 'C.wav',
             'D': 'D.wav',
             'E': 'E.wav',
@@ -71,7 +69,7 @@ def set_instrument(instrument):
             'C#1': 'C_s1.wav',
             'D#1': 'D_s1.wav',
         },
-        'guitar': {
+        'Гітара': {
             'C': 'guitar_C.wav',
             'D': 'guitar_D.wav',
             'E': 'guitar_E.wav',
@@ -101,6 +99,10 @@ def set_instrument(instrument):
         if not os.path.isfile(file_path):
             print(f"Sound file not found: {file_path}")
 
+    update_selected_instrument_label(instrument)
+
+def update_selected_instrument_label(instrument):
+    selected_instrument_label.setText(f"Обраний інструмент: {instrument.capitalize()}")
 
 app = QApplication([])
 
@@ -111,20 +113,25 @@ window.setWindowTitle("Play for your soul")
 option_btn = QPushButton("Вибір інструмента")
 option_btn.setFixedSize(120, 30)
 
-#Меню
+# Меню
 instrument_menu = QMenu(option_btn)
-instrument_menu.addAction("Піанино", lambda: set_instrument('piano'))
-instrument_menu.addAction("Гітара", lambda: set_instrument('guitar'))
+instrument_menu.addAction("Піанино", lambda: set_instrument('Піаніно'))
+instrument_menu.addAction("Гітара", lambda: set_instrument('Гітара'))
 option_btn.setMenu(instrument_menu)
 
+# Елемент для відображення вибраного інструменту
+selected_instrument_label = QLabel("Обраний інструмент: Піаніно")
+selected_instrument_label.setAlignment(Qt.AlignCenter)
+
+option_line = QHBoxLayout()
 help_line = QVBoxLayout()
 upper_keys_line = QHBoxLayout()
 main_keys_line = QHBoxLayout()
 
 keys = {}
-set_instrument('piano')  # Піаніно по дефолту
+set_instrument('Піаніно')  # Піаніно по дефолту
 
-#Для двох рядів - дві змінні
+# Для двох рядів - дві змінні
 white_keys = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C1', 'D1', 'E1', 'F1']
 black_keys = ['C#', 'D#', 'F#', 'G#', 'Bb', 'C#1']
 
@@ -138,13 +145,14 @@ for key in black_keys:
     btn = AnimatedButton(key, file_path, is_black=True)
     upper_keys_line.addWidget(btn)
 
-#Лейаути
+# Лейаути
+help_line.addLayout(option_line)
+help_line.addWidget(selected_instrument_label)
 help_line.addLayout(upper_keys_line)
 help_line.addLayout(main_keys_line)
-help_line.addWidget(option_btn, alignment=Qt.AlignLeft)
+option_line.addWidget(option_btn, alignment=Qt.AlignLeft)
 
 window.setLayout(help_line)
 window.show()
 
 app.exec_()
-
