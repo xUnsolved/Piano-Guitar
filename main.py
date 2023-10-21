@@ -29,7 +29,7 @@ class KeyPressEater:
 
 # Клас кнопок, кольор та інші ініціалізація запуску звуків
 class AnimatedButton(QPushButton):
-    def __init__(self, key, file_path, is_black=False):
+    def __init__(self, key, file_path='', is_black=False):
         super(AnimatedButton, self).__init__(key)
         self.setFixedSize(90, 275)
         self.is_black = is_black
@@ -38,13 +38,21 @@ class AnimatedButton(QPushButton):
         else:
             self.setStyleSheet("background-color: white;")
 
-        self.clicked.connect(lambda _, path=file_path: play_sound(path))
+        self.clicked.connect(lambda _, k=key, path=file_path: play_sound(k, path))
         self.pressed.connect(lambda: KeyPressEater.start_animation(self))
         self.released.connect(lambda: KeyPressEater.end_animation(self))
 
+
 # Клас для запуску звуків
-def play_sound(file_path):
+def play_sound(file_name, file_path=''):
+    global keys
+    file_path = keys.get(file_name, '')
+    if not os.path.isfile(file_path):
+        print(f"Sound file not found: {file_path}")
+        return
     QSound.play(file_path)
+    print(f"Playing sound from: {file_path}")
+
 
 # Пресет назви звуків
 def set_instrument(instrument):
